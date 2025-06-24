@@ -1,3 +1,7 @@
+let mockServerQuotes = [
+  { id: 1, text: "Server quote 1", category: "Server" },
+  { id: 2, text: "Server quote 2", category: "Wisdom" }
+];
 
 const quoteDisplay = document.getElementById('quoteDisplay');
 const categoryFilter = document.getElementById('categoryFilter');
@@ -116,6 +120,43 @@ function loadLastViewedQuote() {
     quoteDisplay.innerHTML = `"${q.text}"<br/><em>(${q.category})</em>`;
   }
 }
+function syncWithServer() {
+  console.log("🔄 Syncing with mock server...");
+
+  const localQuoteMap = new Map(quotes.map(q => [q.id || generateId(q), q]));
+  const serverQuoteMap = new Map(mockServerQuotes.map(q => [q.id || generateId(q), q]));
+
+  const mergedQuotes = [];
+
+  serverQuoteMap.forEach((serverQuote, id) => {
+    if (!localQuoteMap.has(id)) {
+      // New server quote not in local
+      mergedQuotes.push(serverQuote);
+      notifyUser(`📥 New quote from server: "${serverQuote.text}"`);
+    } else {
+      // Conflict resolution (server wins)
+      const localQuote = localQuoteMap.get(id);
+      if (JSON.stringify(localQuote) !== JSON.stringify(serverQuote)) {
+        mergedQuotes.push(serverQuote); // Server version overwrites
+        notifyUser(`⚠️ Conflict resolved using server version for: "${serverQuote.text}"`);
+      } else {
+        mergedQuotes.push(localQuote);
+      }
+    }
+  });
+
+  // Add any remaining local quotes not in server
+  localQuoteMap.forEach((localQuote, id) => {
+    if (!serverQuoteMap.has(id)) {
+      mergedQuotes.push(localQuote);
+    }
+  });
+
+  quotes = mergedQuotes;
+  saveQuotes();
+  populateCategories();
+}
+
 
 // === Init on Page Load ===
 window.addEventListener('load', () => {
