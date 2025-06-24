@@ -1,6 +1,5 @@
 const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteBtn = document.getElementById('newQuote');
-const addQuoteBtn = document.getElementById('addQuoteBtn');
 const categoryFilter = document.getElementById('categoryFilter');
 
 let quotes = [
@@ -9,7 +8,7 @@ let quotes = [
   { text: "Life is really simple, but we insist on making it complicated.", category: "Philosophy" }
 ];
 
-// Populate category dropdown
+// Populate category dropdown with unique values
 function populateCategoryDropdown() {
   const categories = [...new Set(quotes.map(q => q.category))];
   categoryFilter.innerHTML = `<option value="">All</option>`;
@@ -57,13 +56,45 @@ function addQuote() {
   textInput.value = '';
   categoryInput.value = '';
 
-  populateCategoryDropdown(); // Update dropdown if category is new
+  populateCategoryDropdown(); // Refresh dropdown list
   alert("Quote added successfully!");
 }
 
-newQuoteBtn.addEventListener('click', showRandomQuote);
-addQuoteBtn.addEventListener('click', addQuote);
-categoryFilter.addEventListener('change', showRandomQuote);
+// Dynamically create and insert the quote form
+function createAddQuoteForm() {
+  const container = document.createElement('div');
+  container.classList.add('form-group');
 
-// Initialize dropdown on load
-populateCategoryDropdown();
+  const quoteInput = document.createElement('input');
+  quoteInput.type = 'text';
+  quoteInput.id = 'newQuoteText';
+  quoteInput.placeholder = 'Enter a new quote';
+
+  const categoryInput = document.createElement('input');
+  categoryInput.type = 'text';
+  categoryInput.id = 'newQuoteCategory';
+  categoryInput.placeholder = 'Enter quote category';
+
+  const addButton = document.createElement('button');
+  addButton.textContent = 'Add Quote';
+  addButton.addEventListener('click', addQuote);
+
+  container.appendChild(quoteInput);
+  container.appendChild(categoryInput);
+  container.appendChild(addButton);
+
+  document.body.appendChild(document.createElement('h3')).textContent = 'Add a New Quote';
+  document.body.appendChild(container);
+}
+
+// Initial setup on page load
+window.addEventListener('load', () => {
+  populateCategoryDropdown();
+  createAddQuoteForm();
+});
+
+// Event listener for "Show New Quote" button
+newQuoteBtn.addEventListener('click', showRandomQuote);
+
+// Optional: Refresh quote when category changes
+categoryFilter.addEventListener('change', showRandomQuote);
